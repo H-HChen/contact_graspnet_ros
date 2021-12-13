@@ -23,7 +23,7 @@ RUN adduser --disabled-password \
 RUN echo "root:root" | chpasswd
 RUN echo "${USER}:nvgrasp" | chpasswd
 
-###################################### basic tools #####################################
+## basic tools
 
 RUN apt-get update && apt-get install -y \
     curl \
@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     git \
     cmake \
+    wget \
     make \
     vim \
     build-essential \
@@ -44,8 +45,7 @@ RUN apt-get update && apt-get install -y \
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y keyboard-configuration
 RUN pip3 install --upgrade pip
-##################################### ROS1 installation #####################################
-
+## ROS1 installation
 
 # Install ROS 1
 RUN apt update && sudo apt install -y curl gnupg2 lsb-release
@@ -59,7 +59,13 @@ RUN apt install -y python3-rosdep python3-rosinstall-generator python3-vcstool b
  
 RUN echo "ROS $ros1_distro installed successfully"
 
-##################################### setting #####################################
+## Dependency installation
+COPY ./package_apt.txt /
+COPY ./requirement_pip.txt /
+RUN apt update && xargs -a /package_apt.txt apt install -y
+RUN pip3 install -r /requirement_pip.txt
+RUN rm /package_apt.txt /requirement_pip.txt
+## setting
 RUN chown -R ${USER}:${USER} ${HOME}/
 RUN echo "${USER} ALL=(ALL) ALL" > /etc/sudoers
 RUN echo "root ALL=(ALL) ALL" > /etc/sudoers

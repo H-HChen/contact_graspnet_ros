@@ -5,7 +5,7 @@ user=$(logname)
 
 # Make sure processes in the container can connect to the x server
 # Necessary so gazebo can create a context for OpenGL rendering (even headless)
-XAUTH=/tmp/.docker.xauth
+XAUTH=~/.xauthority
 if [ ! -f $XAUTH ]; then
     xauth_list=$(xauth nlist $DISPLAY)
     xauth_list=$(sed -e 's/^..../ffff/' <<<"$xauth_list")
@@ -47,7 +47,7 @@ docker run \
     -e DISPLAY=$DISPLAY \
     -e QT_X11_NO_MITSHM=1 \
     -e XAUTHORITY=$XAUTH \
-    -v "/home/$user/contact_graspnet:/home/user/contact_graspnet" \
+    -v "/home/$user/contact-graspnet-ros:/home/user/contact-graspnet-ros" \
     -v "$XAUTH:$XAUTH" \
     -v "/tmp/.X11-unix:/tmp/.X11-unix" \
     -v "/etc/localtime:/etc/localtime:ro" \
@@ -59,10 +59,3 @@ docker run \
     $DOCKER_OPTS \
     iscilab/graspnet:cuda-20-04 \
     $BASH_OPTION
-
-
-
-   # --rm \
-   # nvidia/cuda:11.1.1-cudnn8-devel-ubuntu18.04 \
-#iscilab/graspnet:GPU \
-
