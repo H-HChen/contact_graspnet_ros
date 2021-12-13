@@ -3,7 +3,7 @@
 
 BASH_OPTION=bash
 
-IMG=iscilab/grasp_tm5:GPU
+IMG=iscilab/graspnet:cuda-20-04
 containerid=$(docker ps -qf "ancestor=${IMG}") && echo $containerid
 
 xhost +
@@ -14,7 +14,7 @@ then
         --privileged \
         -e DISPLAY=${DISPLAY} \
         -e LINES="$(tput lines)" \
-        locobot \
+        grasp_tm5 \
         $BASH_OPTION
 else
     docker start -i grasp_tm5
