@@ -8,8 +8,7 @@ tk
 six
 launchpadlib
 mkl
-mkl_fft
-mkl_random
+mkl_fft==1.3.0
 wheel
 trimesh
 traits
