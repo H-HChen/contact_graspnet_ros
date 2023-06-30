@@ -1,0 +1,7 @@
+sensor_msgs/Image rgb
+sensor_msgs/Image depth
+sensor_msgs/Image seg
+float64[9] K
+int32 segmap_id
+---
+contact_graspnet_ros/GraspPose[] grasp_poses
