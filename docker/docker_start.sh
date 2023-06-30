@@ -14,8 +14,8 @@ then
         --privileged \
         -e DISPLAY=${DISPLAY} \
         -e LINES="$(tput lines)" \
-        grasp_tm5 \
+        contact_grasp \
         $BASH_OPTION
 else
-    docker start -i grasp_tm5
+    docker start -i contact_grasp
 fi
