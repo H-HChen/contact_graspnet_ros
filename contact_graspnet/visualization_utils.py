@@ -2,6 +2,9 @@ import numpy as np
 import mayavi.mlab as mlab
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import cv2
+import colorsys
+import random
 
 import mesh_utils
 
@@ -40,7 +43,29 @@ def plot_coordinates(t,r, tube_radius=0.005):
     mlab.plot3d([t[0],t[0]+0.2*r[0,0]], [t[1],t[1]+0.2*r[1,0]], [t[2],t[2]+0.2*r[2,0]], color=(1,0,0), tube_radius=tube_radius, opacity=1)
     mlab.plot3d([t[0],t[0]+0.2*r[0,1]], [t[1],t[1]+0.2*r[1,1]], [t[2],t[2]+0.2*r[2,1]], color=(0,1,0), tube_radius=tube_radius, opacity=1)
     mlab.plot3d([t[0],t[0]+0.2*r[0,2]], [t[1],t[1]+0.2*r[1,2]], [t[2],t[2]+0.2*r[2,2]], color=(0,0,1), tube_radius=tube_radius, opacity=1)
-                
+
+def random_colors(N, bright=True):
+    """
+    Generate random colors.
+    To get visually distinct colors, generate them in HSV space then
+    convert to RGB.
+    """
+    brightness = 1.0 if bright else 0.7
+    hsv = [(i / N, 1, brightness) for i in range(N)]
+    colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
+    random.shuffle(colors)
+    return colors
+
+def apply_mask(image, mask, color, target_id, alpha=0.5):
+    """Apply the given mask to the image.
+    """
+    for c in range(3):
+        image[:, :, c] = np.where(mask == target_id,
+                                  image[:, :, c] *
+                                  (1 - alpha) + alpha * color[c] * 255,
+                                  image[:, :, c])
+    return image
+
 def show_image(rgb, segmap):
     """
     Overlay rgb image with segmentation and imshow segment
@@ -49,21 +74,19 @@ def show_image(rgb, segmap):
         rgb {np.ndarray} -- color image
         segmap {np.ndarray} -- integer segmap of same size as rgb
     """
-    plt.figure()
-    figManager = plt.get_current_fig_manager()
-    figManager.window.showMaximized()
-    
-    plt.ion()
-    plt.show()
-    
     if rgb is not None:
-        plt.imshow(rgb)
+        cv2.imshow("rgb", cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB))
     if segmap is not None:
-        cmap = plt.get_cmap('rainbow')
-        cmap.set_under(alpha=0.0)   
-        plt.imshow(segmap, cmap=cmap, alpha=0.5, vmin=0.0001)
-    plt.draw()
-    plt.pause(0.001)
+        seg_ids = np.unique(segmap)[1:]
+        colors = random_colors(len(seg_ids))
+        vis_mask = cv2.cvtColor(rgb, cv2.COLOR_BGR2RGB).astype(np.uint8).copy()
+        vis_mask = np.tile(np.expand_dims(cv2.cvtColor(rgb.astype(np.uint8).copy(), cv2.COLOR_BGR2GRAY), 2), [1, 1, 3])
+        for i in range(len(seg_ids)):
+            color = colors[i]
+            apply_mask(vis_mask, segmap, color, seg_ids[i])
+            cv2.imshow("segmap", vis_mask)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 def visualize_grasps(full_pc, pred_grasps_cam, scores, plot_opencv_cam=False, pc_colors=None, gripper_openings=None, gripper_width=0.08):
     """Visualizes colored point cloud and predicted grasps. If given, colors grasps by segmap regions. 
