@@ -42,7 +42,7 @@ class GraspnetNode():
         """
         self.ckpt_dir = rospy.get_param(
             "~ckpt_dir",
-            os.path.dirname(os.path.abspath(__file__)).replace("contact_graspnet", "checkpoints/scene_test_2048_bs3_hor_sigma_001"))
+            os.path.dirname(os.path.abspath(__file__)).rstrip("contact_graspnet") + "checkpoints/scene_test_2048_bs3_hor_sigma_001")
         self.z_range = rospy.get_param("~z_range", [0.2, 1.1])
         self.local_regions = rospy.get_param("~local_regions", False)
         self.filter_grasps = rospy.get_param("~filter_grasps", True)

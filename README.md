@@ -13,10 +13,26 @@ ICRA 2021
 ## Installation
 
 This code has been tested with python 3.7, tensorflow 2.2, CUDA 11.1
-
+#### Conda
 Create the conda env
 ```
 conda env create -f contact_graspnet_env.yml
+```
+#### Docker with ROS
+
+```bash
+cd ~
+mkdir -p contact_ros1_ws/src
+cd contact_ros1_ws/src
+git clone https://github.com/H-HChen/contact_graspnet_ros.git
+cd contact_graspnet_ros/docker
+bash ./build.sh
+bash ./docker_run.sh
+```
+
+After installation, you can launch docker container with
+```bash
+bash ./docker_start.sh
 ```
 
 ### Troubleshooting
@@ -70,6 +86,27 @@ python contact_graspnet/inference.py --np_path=/path/to/your/pc.npy \
 `--z_range` [min, max] z values in meter used to crop the input point cloud, e.g. to avoid grasps in the foreground/background(as above).  
 `--arg_configs TEST.second_thres:0.19 TEST.first_thres:0.23` Overwrite config confidence thresholds for successful grasp contacts to get more/less grasp proposals 
 
+## Inference by using ROS
+Contact_graspnet_ros is using ROS service to transport data. You can check data type in `msg/GraspPose.msg` and `srv/GraspGroup.srv`. Below is the content of service data type.
+The client sends RGB-D data, target mask and intrinsic matrix as request, then takes a list of grasping pose candidates as return.
+If you set the parameter `local_regions` or `filter_grasps` as True,
+you need to specify the target ID in object mask. For example, if `seg` is a binary mask, then you need to set `segmap_id` as 1.
+
+```
+sensor_msgs/Image rgb
+sensor_msgs/Image depth
+sensor_msgs/Image seg
+float64[9] K
+int32 segmap_id
+---
+contact_graspnet_ros/GraspPose[] grasp_poses
+```
+
+After loading current workspace, you can launch a ROS node by command-line.
+```bash
+source ~/contact_ros1_ws/devel/setup.bash
+rosrun contact_graspnet_ros ros_node.py
+```
 
 ## Training
 
